@@ -1531,7 +1531,7 @@ describe("Garden", () => {
         (err) => {
           expect(err.message).to.equal("Failed resolving one or more providers:\n" + "- test")
           expect(stripAnsi(err.detail.messages[0])).to.equal(
-            "- test: Invalid template string (${bla.ble}): Could not find key bla. Available keys: command, environment, git, local, project, providers, secrets, var and variables."
+            "- test: Invalid template string (${bla.ble}): Could not find key bla. Available keys: command, datetime, environment, git, local, project, providers, secrets, var and variables."
           )
         }
       )
@@ -2544,6 +2544,16 @@ describe("Garden", () => {
 
       // We template in the value for the module's allowPublish field to test this
       expect(module.allowPublish).to.equal(false)
+    })
+
+    it("should filter out null build dependencies after resolving template strings", async () => {
+      const projectRoot = getDataDir("test-projects", "dynamic-build-dependencies")
+      const garden = await makeTestGarden(projectRoot)
+
+      const module = await garden.resolveModule("module-a")
+      const moduleCDep = { name: "module-c", copy: [] }
+      expect(module.build.dependencies).to.eql([moduleCDep])
+      expect(module.spec.build.dependencies).to.eql([moduleCDep])
     })
 
     it("should correctly resolve template strings referencing nested variables", async () => {
